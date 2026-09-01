@@ -1,0 +1,19 @@
+[Unit]
+Description=Boardly (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/boardly
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=TODO_DB_PATH=/var/lib/boardly/todo.db
+ExecStart=/usr/bin/node .next/standalone/server.js
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

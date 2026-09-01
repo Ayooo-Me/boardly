@@ -1,19 +1,24 @@
 {
-  "name": "todo-board",
-  "version": "0.1.0",
+  "name": "boardly",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-strip-types --experimental-specifier-resolution=node",
+    "create-admin": "node --experimental-strip-types --experimental-specifier-resolution=node scripts/create-admin.mjs"
   },
   "dependencies": {
+    "better-sqlite3": "^13.0.3",
     "next": "16.3.3",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
