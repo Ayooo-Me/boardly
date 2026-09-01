@@ -133,3 +133,20 @@ For public deployments:
 - Do not rely on guest joining for sensitive boards.
 
 For local or LAN testing, use `http://`. HTTPS requires TLS configuration outside the Next.js app.
+
+## Automated VPS prerequisites
+
+Run `./deploy.sh` as root or as a user with passwordless/interactive `sudo` access. The script detects Debian/Ubuntu, RHEL/Fedora, and Arch Linux and installs missing Node.js, npm, native compilation tools, Python, and SQLite tools using the available package manager. It then runs `npm ci` before building. Unsupported distributions should install Node.js 20+ and npm manually.
+
+## VPS deployment troubleshooting
+
+On a source checkout, install dependencies before running any npm command that invokes Next.js:
+
+```bash
+cd /path/to/boardly
+npm ci
+npm run build
+NODE_ENV=production TODO_DB_PATH=/var/lib/boardly/todo.db PORT=3000 npm start
+```
+
+If the shell reports `next: not found`, `node_modules` is missing; run `npm ci` from the repository root. For the standalone deployment, run `node .next/standalone/server.js` instead of `npm start` and copy `.next/static/` and `public/` alongside the standalone output.

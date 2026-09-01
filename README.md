@@ -2,15 +2,24 @@
 
 Simple, shareable task boards for getting things done together.
 
+## Requirements
+
+- Node.js 20 or newer
+- npm
+- SQLite support through `better-sqlite3`
+
 ## Run locally
 
+Install dependencies first:
+
 ```bash
+npm ci
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000), or use the demo board at `/boards/demo`. For another device on your LAN, use `http://<your-computer-ip>:3000` (plain HTTP).
+If you see `next: not found`, dependencies have not been installed. Run `npm ci` in the project directory and then retry.
 
-Users join boards from a shared URL after signing in; their account name is used automatically. Only administrators can create boards, from `/admin` or the administrator home screen. Boardly also supports local email/password accounts at `/auth`, with hashed passwords and expiring httpOnly sessions. Verification and reset links are logged during development until an email provider is configured.
+Open [http://localhost:3000](http://localhost:3000), or use `http://<your-computer-ip>:3000` for LAN testing. Users join boards from a shared URL after signing in; their account name is used automatically. Only administrators can create boards, from `/admin` or the administrator home screen.
 
 ## Checks
 
@@ -21,18 +30,52 @@ npm test
 npm run build
 ```
 
+## Quick VPS deployment
+
+On a fresh Ubuntu/Debian VPS:
+
+```bash
+sudo apt update
+sudo apt install -y nodejs npm
+cd /home/ubuntu/board/boardly
+npm ci
+npm run build
+mkdir -p /var/lib/boardly
+sudo chown -R "$USER":"$USER" /var/lib/boardly
+TODO_DB_PATH=/var/lib/boardly/todo.db PORT=3000 NODE_ENV=production npm start
+```
+
+Open `http://your-server-ip:3000/setup` and create the first administrator. Put the application behind HTTPS and a reverse proxy before exposing it publicly.
+
+For a background service, edit `deploy/todo-board.service` to match your VPS user and application path, then install it:
+
+```bash
+sudo cp deploy/todo-board.service /etc/systemd/system/boardly.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now boardly
+sudo systemctl status boardly
+```
+
+Check logs with:
+
+```bash
+sudo journalctl -u boardly -f
+```
+
 ## Deployment wizard
 
-Run the interactive preparation wizard locally:
+The wizard detects Debian/Ubuntu, RHEL/Fedora, and Arch Linux. When Node.js/npm are missing it uses the available system package manager to install Node.js, npm, native build tools, Python, and SQLite tools; it uses `sudo` when needed. It then installs project dependencies with `npm ci` and prepares a standalone production build:
+
+**Run it as a user with sudo access or as root:**
 
 ```bash
 chmod +x deploy.sh deploy-tui.sh
 ./deploy.sh --tui
 ```
 
-The wizard asks for the domain, port, service user, persistent SQLite path, and branding, writes a private `.env.production`, and runs the production build. After deployment, open the site root and complete `/setup`; the first account becomes the administrator and can create boards. Board pages include a **Share link** button that copies the current board URL. The app itself supports plain HTTP for local/LAN use; HTTPS requires a reverse proxy or TLS terminator in front of it. It intentionally does not install packages, modify DNS, create users, or deploy remotely. On a fresh deployment, open `/setup` to create the first administrator.
+It asks for the domain, port, service user, persistent SQLite path, and branding, writes a private `.env.production`, installs missing prerequisites and dependencies, and runs the production build. On unsupported distributions, install Node.js 20+ and npm manually before rerunning. Copy `.next/standalone/`, `.next/static/`, `public/`, and the generated environment configuration to the server. The server must have Node.js installed, but does not need the full source tree or `node_modules` when using the standalone output.
 
-For production, put the app behind HTTPS and a reverse proxy before exposing it publicly. Review `deploy/todo-board.service` and the generated environment file before enabling systemd.
+After deployment, open the site root and complete `/setup`; the first account becomes the administrator and can create boards. Board pages include a **Share link** button that copies the current board URL. Plain HTTP is suitable only for trusted local/LAN testing; HTTPS requires a reverse proxy or TLS terminator.
 
 ## Database
 
@@ -48,11 +91,9 @@ Back up the database before deployments or schema changes:
 sqlite3 "$TODO_DB_PATH" '.backup todo.db.backup'
 ```
 
-The app performs additive startup migrations for task descriptions, priorities, due dates, ordering, timestamps, user presence, shared board documents, and board memberships. Board roles are enforced server-side: owners manage members, editors manage board content, commenters can comment, and viewers are read-only.
-
 ## White-label branding and admin
 
-Configure branding without editing source code by adding these values to `.env.production` or `.env.local`:
+Configure branding with:
 
 ```env
 NEXT_PUBLIC_BRAND_NAME=Acme Workspace
@@ -62,12 +103,12 @@ NEXT_PUBLIC_BRAND_LOGO=/icon.png
 NEXT_PUBLIC_BRAND_ACCENT=#635bff
 ```
 
-There is no admin email/password stored in source. On a fresh installation, open `/setup` and create the first administrator account. The setup is available only while no administrator exists; after that, sign in normally at `/auth` and open `/admin`. The admin dashboard shows installation metrics, accounts, boards, and active white-label settings. It does not replace board-level roles: board owners still manage individual board membership.
-
-The deployment wizard points first-time installations to `/setup`. The old `ADMIN_EMAILS` configuration is no longer used. The one-time `npm run create-admin` command remains available as a local recovery utility, but normal first boot uses `/setup`.
+On a fresh installation, `/setup` creates the first administrator. Only administrators can create boards and manage accounts, boards, branding, permissions, and invite codes.
 
 ## Product documentation
 
-Open [`/docs`](http://localhost:3000/docs) in the running app for the full web guide. It covers first-time setup, board modes and purposes, task workflows, private one-time invite codes, permissions, administration, white-label configuration, and troubleshooting.
+Open [`/docs`](http://localhost:3000/docs) in the running app for the full web guide. The offline guide is available at [`docs/BOARDLY.md`](docs/BOARDLY.md).
 
-The same guide is available in [`docs/BOARDLY.md`](docs/BOARDLY.md) for repositories, deployments, and offline reference.
+## Contributing and license
+
+See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Boardly is available under the [MIT License](LICENSE), without warranty.
