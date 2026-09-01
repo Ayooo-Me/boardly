@@ -30,7 +30,24 @@ npm test
 npm run build
 ```
 
-## Quick VPS deployment
+## One-command VPS deployment
+
+From the repository root, the installer detects the VPS IPv4 address, installs supported system prerequisites, runs `npm ci`, builds Boardly, creates persistent SQLite storage, installs a systemd service, and starts the app:
+
+```bash
+chmod +x boardly-install.sh
+sudo ./boardly-install.sh
+```
+
+It supports Debian/Ubuntu, RHEL/Fedora, and Arch Linux. Set optional values without prompts:
+
+```bash
+sudo BOARDLY_PORT=3000 BOARDLY_USER=ubuntu ./boardly-install.sh
+```
+
+After it finishes, open the printed IPv4 URL and complete `/setup` to create the first administrator. The installer uses plain HTTP for initial LAN/VPS testing; configure HTTPS with a reverse proxy before public exposure.
+
+## Manual VPS deployment
 
 On a fresh Ubuntu/Debian VPS:
 
@@ -62,7 +79,7 @@ Check logs with:
 sudo journalctl -u boardly -f
 ```
 
-## Deployment wizard
+## Interactive deployment wizard
 
 The wizard detects Debian/Ubuntu, RHEL/Fedora, and Arch Linux. When Node.js/npm are missing it uses the available system package manager to install Node.js, npm, native build tools, Python, and SQLite tools; it uses `sudo` when needed. It then installs project dependencies with `npm ci` and prepares a standalone production build:
 

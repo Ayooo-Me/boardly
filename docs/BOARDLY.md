@@ -134,6 +134,19 @@ For public deployments:
 
 For local or LAN testing, use `http://`. HTTPS requires TLS configuration outside the Next.js app.
 
+## One-command VPS installer
+
+From the repository root, run:
+
+```bash
+chmod +x boardly-install.sh
+sudo ./boardly-install.sh
+```
+
+The installer detects the server IPv4 address, installs supported OS prerequisites, installs npm dependencies, builds the standalone app, creates persistent SQLite storage, installs a systemd service, starts Boardly, and prints the setup URL. It supports Debian/Ubuntu, RHEL/Fedora, and Arch Linux. Optional settings can be supplied as environment variables, for example `sudo BOARDLY_PORT=3000 BOARDLY_USER=ubuntu ./boardly-install.sh`.
+
+Complete the first administrator setup at the printed `/setup` URL. The installer starts with HTTP for convenience; use a reverse proxy and HTTPS before exposing the service publicly.
+
 ## Automated VPS prerequisites
 
 Run `./deploy.sh` as root or as a user with passwordless/interactive `sudo` access. The script detects Debian/Ubuntu, RHEL/Fedora, and Arch Linux and installs missing Node.js, npm, native compilation tools, Python, and SQLite tools using the available package manager. It then runs `npm ci` before building. Unsupported distributions should install Node.js 20+ and npm manually.
